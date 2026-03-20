@@ -19,21 +19,21 @@
 
         .wheel-container {
             position: relative;
-            width: 350px;
-            height: 350px;
+            width: 380px;
+            height: 380px;
         }
 
-        /* The little arrow at the top */
+        /* The Red Arrow at the TOP */
         .arrow {
             position: absolute;
-            top: -20px;
+            top: -25px;
             left: 50%;
             transform: translateX(-50%);
             width: 0; 
             height: 0; 
             border-left: 15px solid transparent;
             border-right: 15px solid transparent;
-            border-top: 30px solid #ff4757;
+            border-top: 35px solid #ff4757;
             z-index: 10;
         }
 
@@ -41,33 +41,39 @@
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            box-shadow: 0 0 20px rgba(0,0,0,0.2);
-            transition: transform 5s cubic-bezier(0.15, 0, 0.15, 1);
+            box-shadow: 0 0 25px rgba(0,0,0,0.3);
+            /* Smooth 6-second spin animation */
+            transition: transform 6s cubic-bezier(0.1, 0, 0.1, 1);
         }
 
-        #spin-btn {
-            margin-top: 30px;
-            padding: 15px 40px;
-            font-size: 1.2rem;
+        #spin-btn, #claim-btn {
+            margin-top: 40px;
+            padding: 18px 50px;
+            font-size: 1.3rem;
             font-weight: bold;
             color: white;
             background: #27ae60;
             border: none;
             border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+            box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+            transition: 0.3s;
         }
 
-        #spin-btn:disabled {
-            background: #bdc3c7;
-            cursor: not-allowed;
+        #spin-btn:hover, #claim-btn:hover { background: #2ecc71; transform: scale(1.05); }
+        #spin-btn:disabled { background: #bdc3c7; cursor: not-allowed; }
+        
+        #claim-btn {
+            display: none; /* Hidden until spin finishes */
+            background: #8e44ad;
+            box-shadow: 0 6px 20px rgba(142, 68, 173, 0.4);
         }
 
-        /* Video Overlay */
+        /* Fullscreen Video Overlay */
         #video-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.95);
             display: none;
             justify-content: center;
             align-items: center;
@@ -76,83 +82,77 @@
 
         .video-content {
             width: 90%;
-            max-width: 800px;
+            max-width: 850px;
             aspect-ratio: 16/9;
+            border: 3px solid #fff;
+            background: #000;
         }
     </style>
 </head>
 <body>
 
-    <h1>Spin for your Eid Salami! 🌙</h1>
+    <h1>🌙 Eid Salami Lucky Spin!</h1>
 
     <div class="wheel-container">
         <div class="arrow"></div>
-        <canvas id="wheelCanvas" width="500" height="500"></canvas>
+        <canvas id="wheelCanvas" width="600" height="600"></canvas>
     </div>
 
-    <button id="spin-btn" onclick="spinWheel()">SPIN NOW</button>
+    <button id="spin-btn" onclick="spinWheel()">SPIN FOR SALAMI</button>
+    <button id="claim-btn" onclick="showVideo()">CLAIM YOUR SALAMI 🎁</button>
 
     <div id="video-overlay">
-        <div class="video-content" id="player-container">
-            </div>
+        <div class="video-content" id="player-container"></div>
     </div>
 
     <script>
         const canvas = document.getElementById('wheelCanvas');
         const ctx = canvas.getContext('2d');
-        const segments = ["100 TK", "50 TK", "DUA 🤲", "20 TK", "10 TK", "NO SALAMI"];
-        const colors = ["#f1c40f", "#e67e22", "#9b59b6", "#e74c3c", "#3498db", "#95a5a6"];
         
-        // --- CONFIGURATION ---
-        const YOUTUBE_VIDEO_ID = "YOUR_VIDEO_ID_HERE"; // PASTE YOUR VIDEO ID HERE
-        const TARGET_INDEX = 2; // Index of "DUA" in the array above
-        // ---------------------
+        // 12 Segments - DUA is at Index 9
+        const segments = ["500", "1000", "50", "2000", "1500", "100", "5000", "0", "10", "DUA 🤲", "200", "JACKPOT"];
+        const colors = ["#1abc9c", "#3498db", "#9b59b6", "#f1c40f", "#e67e22", "#e74c3c", "#16a085", "#2980b9", "#8e44ad", "#f39c12", "#d35400", "#c0392b"];
+        
+        // Corrected Video ID
+        const YOUTUBE_VIDEO_ID = "y9xoUM5G92nlKhfz"; 
 
-        let currentRotation = 0;
-
-        // Draw the wheel
         function drawWheel() {
-            const sliceAngle = (2 * Math.PI) / segments.length;
-            for (let i = 0; i < segments.length; i++) {
+            const numSegments = segments.length;
+            const sliceAngle = (2 * Math.PI) / numSegments;
+
+            for (let i = 0; i < numSegments; i++) {
                 ctx.beginPath();
                 ctx.fillStyle = colors[i];
-                ctx.moveTo(250, 250);
-                ctx.arc(250, 250, 250, i * sliceAngle, (i + 1) * sliceAngle);
+                ctx.moveTo(300, 300);
+                ctx.arc(300, 300, 300, i * sliceAngle, (i + 1) * sliceAngle);
                 ctx.fill();
 
-                // Add Text
                 ctx.save();
-                ctx.translate(250, 250);
+                ctx.translate(300, 300);
                 ctx.rotate(i * sliceAngle + sliceAngle / 2);
                 ctx.textAlign = "right";
                 ctx.fillStyle = "white";
-                ctx.font = "bold 24px Arial";
-                ctx.fillText(segments[i], 230, 10);
+                ctx.font = "bold 22px Arial";
+                ctx.fillText(segments[i], 280, 10);
                 ctx.restore();
             }
         }
 
         function spinWheel() {
             const btn = document.getElementById('spin-btn');
+            const claimBtn = document.getElementById('claim-btn');
             btn.disabled = true;
 
-            // Calculation to ALWAYS stop at DUA
-            // 360 / segments.length = 60 degrees per slice
-            // DUA is the 3rd slice (Index 2). 
-            // We want it to be at the top (270 degrees position relative to canvas start)
-            
-            const segmentDegrees = 360 / segments.length;
-            const extraSpins = 360 * 5; // Spin 5 times for effect
-            
-            // This math forces the wheel to land on TARGET_INDEX
-            const stopAt = extraSpins + (360 - (TARGET_INDEX * segmentDegrees) - (segmentDegrees / 2));
+            // 1995 is the magic number for DUA at Index 9.
+            const stopAt = 1995; 
             
             canvas.style.transform = `rotate(${stopAt}deg)`;
 
-            // Wait for animation to finish (5 seconds)
+            // Wait for 6s spin animation to finish
             setTimeout(() => {
-                showVideo();
-            }, 5200);
+                btn.style.display = 'none'; // Hide spin button
+                claimBtn.style.display = 'block'; // Show claim button
+            }, 6200);
         }
 
         function showVideo() {
@@ -160,7 +160,7 @@
             const container = document.getElementById('player-container');
             
             overlay.style.display = "flex";
-            container.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+            container.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?autoplay=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
         }
 
         drawWheel();
