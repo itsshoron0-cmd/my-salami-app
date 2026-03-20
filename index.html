@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salami Fortune Wheel</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 350px;
+            height: 350px;
+        }
+
+        /* The little arrow at the top */
+        .arrow {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0; 
+            height: 0; 
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 30px solid #ff4757;
+            z-index: 10;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            transition: transform 5s cubic-bezier(0.15, 0, 0.15, 1);
+        }
+
+        #spin-btn {
+            margin-top: 30px;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+            background: #27ae60;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+        }
+
+        #spin-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        /* Video Overlay */
+        #video-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .video-content {
+            width: 90%;
+            max-width: 800px;
+            aspect-ratio: 16/9;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Spin for your Eid Salami! 🌙</h1>
+
+    <div class="wheel-container">
+        <div class="arrow"></div>
+        <canvas id="wheelCanvas" width="500" height="500"></canvas>
+    </div>
+
+    <button id="spin-btn" onclick="spinWheel()">SPIN NOW</button>
+
+    <div id="video-overlay">
+        <div class="video-content" id="player-container">
+            </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        const segments = ["1000 TK", "500 TK", "DUA 🤲", "2000 TK", "100 TK", "NO SALAMI"];
+        const colors = ["#f1c40f", "#e67e22", "#9b59b6", "#e74c3c", "#3498db", "#95a5a6"];
+        
+        // --- CONFIGURATION ---
+        const YOUTUBE_VIDEO_ID = "YOUR_VIDEO_ID_HERE"; // PASTE YOUR VIDEO ID HERE
+        const TARGET_INDEX = 2; // Index of "DUA" in the array above
+        // ---------------------
+
+        let currentRotation = 0;
+
+        // Draw the wheel
+        function drawWheel() {
+            const sliceAngle = (2 * Math.PI) / segments.length;
+            for (let i = 0; i < segments.length; i++) {
+                ctx.beginPath();
+                ctx.fillStyle = colors[i];
+                ctx.moveTo(250, 250);
+                ctx.arc(250, 250, 250, i * sliceAngle, (i + 1) * sliceAngle);
+                ctx.fill();
+
+                // Add Text
+                ctx.save();
+                ctx.translate(250, 250);
+                ctx.rotate(i * sliceAngle + sliceAngle / 2);
+                ctx.textAlign = "right";
+                ctx.fillStyle = "white";
+                ctx.font = "bold 24px Arial";
+                ctx.fillText(segments[i], 230, 10);
+                ctx.restore();
+            }
+        }
+
+        function spinWheel() {
+            const btn = document.getElementById('spin-btn');
+            btn.disabled = true;
+
+            // Calculation to ALWAYS stop at DUA
+            // 360 / segments.length = 60 degrees per slice
+            // DUA is the 3rd slice (Index 2). 
+            // We want it to be at the top (270 degrees position relative to canvas start)
+            
+            const segmentDegrees = 360 / segments.length;
+            const extraSpins = 360 * 5; // Spin 5 times for effect
+            
+            // This math forces the wheel to land on TARGET_INDEX
+            const stopAt = extraSpins + (360 - (TARGET_INDEX * segmentDegrees) - (segmentDegrees / 2));
+            
+            canvas.style.transform = `rotate(${stopAt}deg)`;
+
+            // Wait for animation to finish (5 seconds)
+            setTimeout(() => {
+                showVideo();
+            }, 5200);
+        }
+
+        function showVideo() {
+            const overlay = document.getElementById('video-overlay');
+            const container = document.getElementById('player-container');
+            
+            overlay.style.display = "flex";
+            container.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+        }
+
+        drawWheel();
+    </script>
+</body>
+</html>
